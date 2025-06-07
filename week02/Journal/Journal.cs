@@ -4,21 +4,15 @@ using System.IO;
 
 public class Journal
 {
-    private List<Entry> _entries = new();
+    private List<Entry> _entries = new List<Entry>();
 
-    public void AddEntry(string prompt, string response)
+    public void AddEntry(Entry entry)
     {
-        _entries.Add(new Entry(prompt, response));
+        _entries.Add(entry);
     }
 
     public void DisplayEntries()
     {
-        if (_entries.Count == 0)
-        {
-            Console.WriteLine("No entries found.");
-            return;
-        }
-
         foreach (var entry in _entries)
         {
             Console.WriteLine(entry);
@@ -27,13 +21,28 @@ public class Journal
 
     public void SaveToFile(string filename)
     {
-        using StreamWriter writer = new(filename);
-        foreach (var entry in _entries)
+        using (StreamWriter writer = new StreamWriter(filename))
         {
-            // Use ~|~ as separator to avoid commas issues
-            writer.WriteLine($"{entry.Date}~|~{entry.Prompt}~|~{entry.Response}");
+            foreach (var entry in _entries)
+            {
+                writer.WriteLine(entry.ToFileFormat());
+            }
         }
+        Console.WriteLine("Journal saved successfully!");
     }
+
+    public void LoadFromFile(string filename)
+    {
+        _entries.Clear();
+        var lines = File.ReadAllLines(filename);
+        foreach (var line in lines)
+        {
+            _entries.Add(Entry.FromFileFormat(line));
+        }
+        Console.WriteLine("Journal loaded successfully!");
+    }
+}
+
 
     public void LoadFromFile(string filename)
     {
